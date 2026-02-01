@@ -283,6 +283,12 @@
             <div class="kanban" id="kanban"></div>
         </div>
 
+        <!-- Completed Work -->
+        <div class="card" style="margin-bottom: 48px;">
+            <div class="card-header" onclick="window.location.href='pages/completed.html'"><span class="card-title"><span class="claw-accent">⟩</span> Completed Work</span><span class="card-badge" id="completedCount">0</span></div>
+            <div id="completedWork"></div>
+        </div>
+
         <!-- Footer -->
         <div class="footer">
             Last updated: <span id="lastUpdated">--</span> · Auto-refreshes every 30s · 
@@ -480,6 +486,18 @@
                 <div class="kanban-col"><div class="kanban-title">Review (${k.review.length})</div>${k.review.map(t => `<div class="kanban-item">${t.title}<div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${t.agent} · ${t.priority}</div></div>`).join('')}</div>
                 <div class="kanban-col"><div class="kanban-title">Done (${k.done.length})</div>${k.done.map(t => `<div class="kanban-item" style="opacity:0.7">${t.title}<div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${t.agent}</div></div>`).join('')}</div>
             `;
+            
+            // Completed Work (preview - last 5)
+            const done = k.done || [];
+            document.getElementById('completedCount').textContent = done.length;
+            document.getElementById('completedWork').innerHTML = done.slice(0, 5).map(t => `
+                <div class="item" style="border-left:3px solid var(--success);padding-left:12px;">
+                    <div class="item-content">
+                        <div class="item-title">${t.title}</div>
+                        <div class="item-desc">${t.agent} · ${t.priority}</div>
+                    </div>
+                </div>
+            `).join('') + (done.length > 5 ? `<div style="text-align:center;padding:12px;color:var(--muted);font-size:0.85rem;">+ ${done.length - 5} more completed tasks</div>` : '');
         }
 
         function renderComms(d) {

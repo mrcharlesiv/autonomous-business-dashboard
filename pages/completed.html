@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Completed Work — DocuMind AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #111111;
+            --border: #222;
+            --text: #ffffff;
+            --muted: #888;
+            --coral: #FF4D4D;
+            --coral-dim: rgba(255, 77, 77, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --blue: #3b82f6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+        .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .back-btn { 
+            padding: 8px 16px; background: var(--card); border: 1px solid var(--border); 
+            border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.9rem;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .back-btn:hover { border-color: var(--coral); }
+        h1 { font-size: 1.8rem; font-weight: 700; }
+        .subtitle { color: var(--muted); margin-bottom: 32px; }
+        .last-update { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value { font-size: 2rem; font-weight: 700; color: var(--success); }
+        .stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+        
+        .completed-list { display: flex; flex-direction: column; gap: 12px; }
+        .completed-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid var(--success);
+            transition: all 0.2s;
+        }
+        .completed-item:hover { border-color: var(--success); transform: translateX(4px); }
+        .completed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .completed-title { font-weight: 600; font-size: 1.1rem; }
+        .completed-priority {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .completed-priority.P0 { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .completed-priority.P1 { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .completed-priority.P2 { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        
+        .completed-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+        .completed-agent { color: var(--text); }
+        .completed-id { font-family: monospace; }
+        
+        .loading { text-align: center; padding: 40px; color: var(--muted); }
+        .error { text-align: center; padding: 40px; color: var(--danger); }
+        
+        @media (max-width: 768px) {
+            .container { padding: 20px 16px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            h1 { font-size: 1.4rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stat-value { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/autonomous-business-dashboard/" class="back-btn">← Back</a>
+            <h1>✅ Completed Work</h1>
+        </div>
+        <p class="subtitle">All finished tasks and deliverables</p>
+        <p class="last-update" id="lastUpdate">Loading...</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCompleted">-</div>
+                <div class="stat-label">Total Completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="p0Completed">-</div>
+                <div class="stat-label">P0 Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="p1Completed">-</div>
+                <div class="stat-label">P1 Tasks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="p2Completed">-</div>
+                <div class="stat-label">P2 Tasks</div>
+            </div>
+        </div>
+        
+        <div class="completed-list" id="completedList">
+            <div class="loading">Loading completed tasks...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const r = await fetch('../data.json?' + Date.now());
+                const data = await r.json();
+                
+                // Update last update time
+                if (data.lastUpdate) {
+                    const date = new Date(data.lastUpdate);
+                    document.getElementById('lastUpdate').textContent = 
+                        'Last updated: ' + date.toLocaleString('en-US', { 
+                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                        });
+                }
+                
+                // Get completed tasks
+                const tasks = data.tasks || {};
+                const done = tasks.done || [];
+                
+                // Calculate stats
+                const p0 = done.filter(t => t.priority === 'P0').length;
+                const p1 = done.filter(t => t.priority === 'P1').length;
+                const p2 = done.filter(t => t.priority === 'P2').length;
+                
+                document.getElementById('totalCompleted').textContent = done.length;
+                document.getElementById('p0Completed').textContent = p0;
+                document.getElementById('p1Completed').textContent = p1;
+                document.getElementById('p2Completed').textContent = p2;
+                
+                // Render completed tasks
+                if (done.length === 0) {
+                    document.getElementById('completedList').innerHTML = 
+                        '<div class="loading">No completed tasks yet</div>';
+                    return;
+                }
+                
+                document.getElementById('completedList').innerHTML = done.map(task => `
+                    <div class="completed-item">
+                        <div class="completed-header">
+                            <div class="completed-title">${task.title}</div>
+                            <span class="completed-priority ${task.priority}">${task.priority}</span>
+                        </div>
+                        <div class="completed-meta">
+                            <span class="completed-agent">👤 ${task.agent}</span>
+                            <span class="completed-id">${task.id}</span>
+                        </div>
+                        ${task.desc ? `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:#ccc;font-size:0.9rem;">${task.desc}</div>` : ''}
+                    </div>
+                `).join('');
+                
+            } catch(e) {
+                console.error('Error loading completed tasks:', e);
+                document.getElementById('completedList').innerHTML = 
+                    '<div class="error">Error loading data. Please refresh.</div>';
+            }
+        }
+        
+        // Load immediately
+        loadData();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
