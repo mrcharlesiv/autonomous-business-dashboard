@@ -37,6 +37,7 @@
         .back-btn:hover { border-color: var(--coral); }
         h1 { font-size: 1.8rem; font-weight: 700; }
         .subtitle { color: var(--muted); margin-bottom: 32px; }
+        .last-update { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
         
         /* Kanban - Desktop: Grid, Mobile: Horizontal Scroll */
         .kanban { 
@@ -109,6 +110,9 @@
         .task-stat-value { font-size: 2rem; font-weight: 700; color: var(--coral); }
         .task-stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
         
+        .loading { text-align: center; padding: 40px; color: var(--muted); }
+        .error { text-align: center; padding: 40px; color: var(--danger); }
+        
         @media (max-width: 768px) {
             .container { padding: 20px 16px; }
             .header { flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -129,153 +133,97 @@
             <a href="/autonomous-business-dashboard/" class="back-btn">← Back</a>
             <h1>📋 Task Board</h1>
         </div>
-        <p class="subtitle">All tasks from agents' task lists</p>
+        <p class="subtitle">Live Kanban — Updates every 10 minutes</p>
+        <p class="last-update" id="lastUpdate">Loading...</p>
         
         <div class="task-stats">
             <div class="task-stat">
-                <div class="task-stat-value" id="backlogCount">0</div>
+                <div class="task-stat-value" id="backlogCount">-</div>
                 <div class="task-stat-label">Backlog</div>
             </div>
             <div class="task-stat">
-                <div class="task-stat-value" id="progressCount">0</div>
+                <div class="task-stat-value" id="progressCount">-</div>
                 <div class="task-stat-label">In Progress</div>
             </div>
             <div class="task-stat">
-                <div class="task-stat-value" id="reviewCount">0</div>
+                <div class="task-stat-value" id="reviewCount">-</div>
                 <div class="task-stat-label">Review</div>
             </div>
             <div class="task-stat">
-                <div class="task-stat-value" id="doneCount">0</div>
+                <div class="task-stat-value" id="doneCount">-</div>
                 <div class="task-stat-label">Done</div>
             </div>
         </div>
         
-        <div class="kanban" id="kanban"></div>
+        <div class="kanban" id="kanban">
+            <div class="loading">Loading tasks...</div>
+        </div>
     </div>
 
     <script>
-        // Full task list from all agents
-        const allTasks = {
-            backlog: [
-                // Marketing P0
-                { id: 'MKT-001', title: 'Create Twitter Content Batches 5-8', agent: 'Marketing', priority: 'P0', desc: '40 additional tweets to extend runway to 3 months' },
-                { id: 'MKT-002', title: 'Build LinkedIn Content Library', agent: 'Marketing', priority: 'P0', desc: '20 LinkedIn posts for professional legal audience' },
-                { id: 'MKT-003', title: 'Create Cold Email Template Variants', agent: 'Marketing', priority: 'P0', desc: '5 email variants for A/B testing' },
-                { id: 'MKT-004', title: 'Develop Referral Program Documentation', agent: 'Marketing', priority: 'P0', desc: 'Complete referral program materials' },
-                { id: 'MKT-005', title: 'Create Video Script for Product Demo', agent: 'Marketing', priority: 'P0', desc: '2-3 minute demo video script' },
-                // Product P0
-                { id: 'PROD-001', title: 'Implement Waitlist Management Dashboard', agent: 'Product', priority: 'P0', desc: 'Track signups, view data, export CSV' },
-                { id: 'PROD-002', title: 'Build Interactive Product Demo', agent: 'Product', priority: 'P0', desc: 'Interactive demo on landing page' },
-                { id: 'PROD-003', title: 'Add Testimonials Section', agent: 'Product', priority: 'P0', desc: 'Placeholder framework for testimonials' },
-                { id: 'PROD-004', title: 'Implement Pricing Calculator', agent: 'Product', priority: 'P0', desc: 'Interactive cost estimator' },
-                { id: 'PROD-005', title: 'Create Exit-Intent Modal', agent: 'Product', priority: 'P0', desc: 'Popup offering lead magnet' },
-                { id: 'PROD-006', title: 'Build Comparison Page', agent: 'Product', priority: 'P0', desc: 'DocuMind vs alternatives' },
-                // Research P0
-                { id: 'RES-001', title: 'Segment Law Firm Database', agent: 'Research', priority: 'P0', desc: 'Tier 1/2/3 segmentation of 142 firms' },
-                { id: 'RES-002', title: 'Deep Research on Tier 1 Targets', agent: 'Research', priority: 'P0', desc: 'Detailed dossiers on 25 top firms' },
-                { id: 'RES-003', title: 'Build Outbound Playbook', agent: 'Research', priority: 'P0', desc: 'Sales playbook with sequences' },
-                { id: 'RES-004', title: 'Research Legal Industry Events 2026', agent: 'Research', priority: 'P0', desc: 'Calendar of 30+ events' },
-                { id: 'RES-005', title: 'Analyze Competitor Customer Reviews', agent: 'Research', priority: 'P0', desc: 'Review analysis on G2, Capterra' },
-                { id: 'RES-006', title: 'Build Legal Tech Influencer List', agent: 'Research', priority: 'P0', desc: '50 influencers with contacts' },
-                // Operations P0
-                { id: 'OPS-001', title: 'Create Automated Health Check Script', agent: 'Operations', priority: 'P0', desc: 'Auto-check systems every 10 min' },
-                { id: 'OPS-002', title: 'Build Uptime Dashboard', agent: 'Operations', priority: 'P0', desc: 'Show uptime percentage' },
-                { id: 'OPS-003', title: 'Implement Log Aggregation', agent: 'Operations', priority: 'P0', desc: 'Centralized logging system' },
-                { id: 'OPS-004', title: 'Create Backup Procedures', agent: 'Operations', priority: 'P0', desc: 'Backup and recovery docs' },
-                { id: 'OPS-005', title: 'Build Token Usage Monitoring', agent: 'Operations', priority: 'P0', desc: 'Real-time token tracking' },
-                // Marketing P1
-                { id: 'MKT-006', title: 'Design Content Repurposing Workflow', agent: 'Marketing', priority: 'P1', desc: 'Systematic content repurposing' },
-                { id: 'MKT-007', title: 'Create Case Study Templates', agent: 'Marketing', priority: 'P1', desc: 'Templates for customer case studies' },
-                { id: 'MKT-008', title: 'Build Competitive Battle Cards', agent: 'Marketing', priority: 'P1', desc: 'Competitor comparison cards' },
-                { id: 'MKT-009', title: 'Design Manual Twitter Posting Schedule', agent: 'Marketing', priority: 'P1', desc: 'Schedule for Charles to post' },
-                { id: 'MKT-010', title: 'Create Podcast Outreach List', agent: 'Marketing', priority: 'P1', desc: '50 legal tech podcasts' },
-                { id: 'MKT-011', title: 'Develop Partnership Outreach Strategy', agent: 'Marketing', priority: 'P1', desc: 'Partnership proposal materials' },
-                { id: 'MKT-012', title: 'Build Email Nurture Sequence', agent: 'Marketing', priority: 'P1', desc: '8-email waitlist nurture' },
-                // Product P1
-                { id: 'PROD-007', title: 'Add PWA Support', agent: 'Product', priority: 'P1', desc: 'Progressive Web App features' },
-                { id: 'PROD-008', title: 'Implement Dark Mode Toggle', agent: 'Product', priority: 'P1', desc: 'Dark/light mode switch' },
-                { id: 'PROD-009', title: 'Create Use Case Pages', agent: 'Product', priority: 'P1', desc: 'Pages for NDA, Employment, etc.' },
-                { id: 'PROD-010', title: 'Add Live Chat Widget', agent: 'Product', priority: 'P1', desc: 'Chat widget for inquiries' },
-                { id: 'PROD-011', title: 'Build Email Preference Center', agent: 'Product', priority: 'P1', desc: 'User preference management' },
-                { id: 'PROD-012', title: 'Implement Loading States', agent: 'Product', priority: 'P1', desc: 'Skeleton screens and loaders' },
-                { id: 'PROD-013', title: 'Create Onboarding Flow Mockup', agent: 'Product', priority: 'P1', desc: 'User onboarding prototype' },
-                // Research P1
-                { id: 'RES-007', title: 'Research Alternative Outreach Channels', agent: 'Research', priority: 'P1', desc: 'LinkedIn, direct mail, etc.' },
-                { id: 'RES-008', title: 'Refine Ideal Customer Profile', agent: 'Research', priority: 'P1', desc: 'Detailed ICP criteria' },
-                { id: 'RES-009', title: 'Build Case Study Target List', agent: 'Research', priority: 'P1', desc: '20 ideal case study candidates' },
-                { id: 'RES-010', title: 'Research Pricing Benchmarks', agent: 'Research', priority: 'P1', desc: 'Legal tech pricing analysis' },
-                { id: 'RES-011', title: 'Create ABM Playbook', agent: 'Research', priority: 'P1', desc: 'Account-based marketing guide' },
-                { id: 'RES-012', title: 'Build Content Calendar', agent: 'Research', priority: 'P1', desc: 'Q2 2026 content calendar' },
-                { id: 'RES-013', title: 'Research International Expansion', agent: 'Research', priority: 'P1', desc: 'Global market opportunities' },
-                // Operations P1
-                { id: 'OPS-006', title: 'Implement Security Audit Checklist', agent: 'Operations', priority: 'P1', desc: 'Security audit procedures' },
-                { id: 'OPS-007', title: 'Create Performance Optimization Guide', agent: 'Operations', priority: 'P1', desc: 'Performance best practices' },
-                { id: 'OPS-008', title: 'Build Cost Optimization Analysis', agent: 'Operations', priority: 'P1', desc: 'Token cost optimization' },
-                { id: 'OPS-009', title: 'Implement Automated Reporting', agent: 'Operations', priority: 'P1', desc: 'Auto-generated reports' },
-                { id: 'OPS-010', title: 'Create Disaster Recovery Plan', agent: 'Operations', priority: 'P1', desc: 'DR procedures and plans' },
-                { id: 'OPS-011', title: 'Build System Documentation Wiki', agent: 'Operations', priority: 'P1', desc: 'Technical documentation' },
-                // P2 Tasks
-                { id: 'MKT-013', title: 'Create Webinar Content Outline', agent: 'Marketing', priority: 'P2', desc: 'Webinar "5 Clauses Attorneys Miss"' },
-                { id: 'MKT-014', title: 'Design Content Calendar Q2', agent: 'Marketing', priority: 'P2', desc: 'Q2 2026 content planning' },
-                { id: 'MKT-015', title: 'Create FAQ Expansion', agent: 'Marketing', priority: 'P2', desc: '10 additional FAQ items' },
-                { id: 'MKT-016', title: 'Design Affiliate Program', agent: 'Marketing', priority: 'P2', desc: 'Affiliate program structure' },
-                { id: 'PROD-014', title: 'Add Micro-Animations', agent: 'Product', priority: 'P2', desc: 'Subtle UI animations' },
-                { id: 'PROD-015', title: 'Implement A/B Testing Framework', agent: 'Product', priority: 'P2', desc: 'A/B testing infrastructure' },
-                { id: 'PROD-016', title: 'Create API Documentation', agent: 'Product', priority: 'P2', desc: 'Public API docs' },
-                { id: 'PROD-017', title: 'Build Status Page', agent: 'Product', priority: 'P2', desc: 'Public status page' },
-                { id: 'RES-014', title: 'Build Investor Database', agent: 'Research', priority: 'P2', desc: 'Legal tech investors' },
-                { id: 'RES-015', title: 'Create Competitive Intelligence Dashboard', agent: 'Research', priority: 'P2', desc: 'Competitor tracking' },
-                { id: 'RES-016', title: 'Research AI Regulation Impact', agent: 'Research', priority: 'P2', desc: 'Regulatory analysis' },
-                { id: 'RES-017', title: 'Build Tech Stack Database', agent: 'Research', priority: 'P2', desc: 'Law firm technology usage' },
-                { id: 'OPS-012', title: 'Implement Predictive Alerting', agent: 'Operations', priority: 'P2', desc: 'Predictive monitoring' },
-                { id: 'OPS-013', title: 'Create Capacity Planning Model', agent: 'Operations', priority: 'P2', desc: 'Capacity forecasting' },
-                { id: 'OPS-014', title: 'Build Auto Scaling Procedures', agent: 'Operations', priority: 'P2', desc: 'Auto-scaling setup' },
-                { id: 'OPS-015', title: 'Implement Chaos Engineering', agent: 'Operations', priority: 'P2', desc: 'Chaos testing' }
-            ],
-            inProgress: [],
-            review: [],
-            done: [
-                { id: 'LEGACY-001', title: 'Landing Page Deployed', agent: 'Product', priority: 'P0', desc: 'Live at documind-ai.github.io' },
-                { id: 'LEGACY-002', title: 'Law Firm Research Complete', agent: 'Research', priority: 'P0', desc: '142 firms identified' },
-                { id: 'LEGACY-003', title: 'Blog Posts Published', agent: 'Product', priority: 'P1', desc: '2 SEO posts live' },
-                { id: 'LEGACY-004', title: 'Email Sequence Ready', agent: 'Marketing', priority: 'P1', desc: 'Waitlist nurture complete' }
-            ]
-        };
-        
-        function render() {
-            document.getElementById('backlogCount').textContent = allTasks.backlog.length;
-            document.getElementById('progressCount').textContent = allTasks.inProgress.length;
-            document.getElementById('reviewCount').textContent = allTasks.review.length;
-            document.getElementById('doneCount').textContent = allTasks.done.length;
-            
-            const columns = [
-                { key: 'backlog', title: 'Backlog', color: '#888' },
-                { key: 'inProgress', title: 'In Progress', color: '#f59e0b' },
-                { key: 'review', title: 'Review', color: '#3b82f6' },
-                { key: 'done', title: 'Done', color: '#22c55e' }
-            ];
-            
-            document.getElementById('kanban').innerHTML = columns.map(col => `
-                <div class="kanban-col">
-                    <div class="kanban-header">
-                        <div class="kanban-title" style="color:${col.color}">${col.title}</div>
-                        <div class="kanban-count">${allTasks[col.key].length}</div>
-                    </div>
-                    ${allTasks[col.key].map(task => `
-                        <div class="task ${task.priority}">
-                            <div class="task-title">${task.title}</div>
-                            <div class="task-meta">
-                                <span class="task-agent">👤 ${task.agent}</span>
-                                <span class="task-priority ${task.priority}">${task.priority}</span>
-                            </div>
-                            ${task.desc ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${task.desc}</div>` : ''}
+        async function loadData() {
+            try {
+                const r = await fetch('../data.json?' + Date.now());
+                const data = await r.json();
+                
+                // Update last update time
+                if (data.lastUpdate) {
+                    const date = new Date(data.lastUpdate);
+                    document.getElementById('lastUpdate').textContent = 
+                        'Last updated: ' + date.toLocaleString('en-US', { 
+                            month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+                        });
+                }
+                
+                // Get tasks from data.json
+                const tasks = data.tasks || { backlog: [], inProgress: [], review: [], done: [], stats: {} };
+                
+                // Update stats
+                const stats = tasks.stats || {};
+                document.getElementById('backlogCount').textContent = stats.backlog || tasks.backlog?.length || 0;
+                document.getElementById('progressCount').textContent = stats.inProgress || tasks.inProgress?.length || 0;
+                document.getElementById('reviewCount').textContent = stats.review || tasks.review?.length || 0;
+                document.getElementById('doneCount').textContent = stats.done || tasks.done?.length || 0;
+                
+                // Render kanban columns
+                const columns = [
+                    { key: 'backlog', title: 'Backlog', color: '#888', tasks: tasks.backlog || [] },
+                    { key: 'inProgress', title: 'In Progress', color: '#f59e0b', tasks: tasks.inProgress || [] },
+                    { key: 'review', title: 'Review', color: '#3b82f6', tasks: tasks.review || [] },
+                    { key: 'done', title: 'Done', color: '#22c55e', tasks: tasks.done || [] }
+                ];
+                
+                document.getElementById('kanban').innerHTML = columns.map(col => `
+                    <div class="kanban-col">
+                        <div class="kanban-header">
+                            <div class="kanban-title" style="color:${col.color}">${col.title}</div>
+                            <div class="kanban-count">${col.tasks.length}</div>
                         </div>
-                    `).join('')}
-                </div>
-            `).join('');
+                        ${col.tasks.map(task => `
+                            <div class="task ${task.priority || 'P1'}">
+                                <div class="task-title">${task.title}</div>
+                                <div class="task-meta">
+                                    <span class="task-agent">👤 ${task.agent}</span>
+                                    <span class="task-priority ${task.priority || 'P1'}">${task.priority || 'P1'}</span>
+                                </div>
+                                ${task.desc ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${task.desc}</div>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+                
+            } catch(e) {
+                console.error('Error loading tasks:', e);
+                document.getElementById('kanban').innerHTML = 
+                    '<div class="error">Error loading tasks. Please refresh.</div>';
+            }
         }
         
-        render();
+        // Load immediately
+        loadData();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadData, 5 * 60 * 1000);
     </script>
 </body>
 </html>
