@@ -1,12 +1,39 @@
-# DocuMind AI Dashboard - Stable Version
+# DocuMind AI Dashboard - Version History
+
+---
+
+## Version: v1.1-clickable-sections (CURRENT)
+**Date:** 2026-02-01  
+**Status:** ✅ All sections clickable with detail pages
+
+### What's New
+- ✅ **Clickable Sections** - Every section header now navigates to a detailed view
+- ✅ **Milestones Page** - Full roadmap with progress bars, dates, owners
+- ✅ **Risks Page** - Priority summary, detailed descriptions, impact analysis
+- ✅ **Notifications Page** - Filterable by type, unread indicators
+- ✅ **Agents Page** - Grade legend, individual scorecards, metrics
+- ✅ **Tasks Page** - Full kanban board with statistics
+- ✅ **Back Navigation** - All detail pages have "← Back to Dashboard" buttons
+
+### New Files
+- `pages/milestones.html` - Detailed milestone view
+- `pages/risks.html` - Risk and blocker details
+- `pages/notifications.html` - Notification feed with filters
+- `pages/agents.html` - Agent accountability details
+- `pages/tasks.html` - Full kanban task board
+
+### Git References
+- **Tag:** `v1.1-clickable-sections`
+- **Branch:** `clickable-backup`
+- **Commit:** `f1bcd75`
+
+---
 
 ## Version: v1.0-stable
 **Date:** 2026-02-01  
-**Status:** ✅ All sections working
+**Status:** ✅ All sections working (baseline)
 
-## What's Working
-
-### Dashboard Features
+### What's Working
 - ✅ Metrics (MRR, Tokens, Tasks, Waitlist)
 - ✅ Countdown to Product Hunt launch
 - ✅ Milestones with progress bars (6 items)
@@ -25,25 +52,28 @@ The dashboard uses a **data transformation layer** that converts the Dashboard A
 - `index.html` - Main dashboard with all sections
 - `data.json` - Source data from Dashboard Agent
 
-## How to Revert
-
-If something breaks in the future, revert to this stable version:
-
-```bash
-# Option 1: Revert to tag
-git checkout v1.0-stable
-
-# Option 2: Revert to branch
-git checkout stable-backup
-
-# Push to main (force)
-git push -f origin HEAD:main
-```
-
-## Git References
+### Git References
 - **Tag:** `v1.0-stable`
 - **Branch:** `stable-backup`
 - **Commit:** `813c255`
+
+---
+
+## How to Revert
+
+### To v1.1 (Clickable Sections):
+```bash
+git checkout v1.1-clickable-sections
+git push -f origin HEAD:main
+```
+
+### To v1.0 (Stable Baseline):
+```bash
+git checkout v1.0-stable
+git push -f origin HEAD:main
+```
+
+---
 
 ## Data Transformation
 The dashboard includes a `transformData()` function that maps:
@@ -61,4 +91,4 @@ All cron jobs now use `moonshot/kimi-k2.5`:
 - Daily Standup (11 PM CST)
 
 ---
-*This version saved as stable reference point*
+*Version history maintained for rollback purposes*
