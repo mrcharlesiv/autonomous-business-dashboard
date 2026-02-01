@@ -74,6 +74,15 @@
             background: var(--coral); color: white; font-size: 0.7rem; padding: 2px 8px; 
             border-radius: 10px; margin-left: 8px;
         }
+        @media (max-width: 768px) {
+            .container { padding: 20px 16px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            h1 { font-size: 1.4rem; }
+        }
+        @media (max-width: 480px) {
+            .risk-summary, .task-stats { grid-template-columns: 1fr; }
+            .scorecards { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
