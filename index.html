@@ -120,7 +120,34 @@
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        @media (max-width: 900px) { .metrics { grid-template-columns: repeat(2, 1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+        @media (max-width: 900px) { .metrics { grid-template-columns: repeat(2, 1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } .kanban { grid-template-columns: repeat(2, 1fr); } }
+
+        @media (max-width: 768px) {
+            .container { padding: 20px 16px; }
+            .hero { padding: 40px 0 30px; }
+            .hero h1 { font-size: 1.8rem; }
+            .hero-sub { font-size: 1rem; }
+            .metrics { grid-template-columns: 1fr; }
+            .metric { padding: 20px; }
+            .metric-value { font-size: 1.5rem; }
+            .axiom { flex-direction: column; text-align: center; padding: 20px; }
+            .axiom-info { text-align: center; }
+            .card { padding: 16px; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .kanban { grid-template-columns: 1fr; }
+            .scorecards { grid-template-columns: repeat(2, 1fr); }
+            .countdown-timer { gap: 20px; }
+            .countdown-value { font-size: 2rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 1.5rem; }
+            .scorecards { grid-template-columns: 1fr; }
+            .comm-header { flex-direction: column; align-items: flex-start; }
+            .comm-time { margin-left: 0; }
+            .item { flex-direction: column; gap: 8px; }
+            .item-dot { margin-top: 0; }
+        }
 
         .item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
         .item:hover { background: rgba(255,255,255,0.03); }
