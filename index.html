@@ -319,28 +319,18 @@
                 channel: 'internal'
             }));
             
-            // Generate kanban from agent statuses
+            // Use tasks from data.json if available
+            const tasks = rawData.tasks || {};
             const kanban = {
-                backlog: [
-                    { id: 't1', title: 'Twitter Account Setup', agent: 'Charles', priority: 'P0' },
-                    { id: 't2', title: 'Cold Email SMTP Config', agent: 'Charles', priority: 'P0' },
-                    { id: 't3', title: 'GA4 Analytics Setup', agent: 'Charles', priority: 'P1' }
-                ],
-                inProgress: agents.filter(a => a.status === 'active').map(a => ({
+                backlog: tasks.backlog || [],
+                inProgress: tasks.inProgress?.length > 0 ? tasks.inProgress : agents.filter(a => a.status === 'active').map(a => ({
                     id: `ip-${a.name}`,
                     title: `${a.name} - ${a.role}`,
                     agent: a.name,
                     priority: 'P1'
                 })),
-                review: [
-                    { id: 'r1', title: 'Twitter Content (40+ posts)', agent: 'Marketing', priority: 'P1' },
-                    { id: 'r2', title: 'Cold Email Templates', agent: 'Marketing', priority: 'P1' }
-                ],
-                done: [
-                    { id: 'd1', title: 'Landing Page Deployed', agent: 'Product', priority: 'P0' },
-                    { id: 'd2', title: 'Law Firm Research (142)', agent: 'Research', priority: 'P0' },
-                    { id: 'd3', title: 'Blog Posts (2)', agent: 'Product', priority: 'P1' }
-                ]
+                review: tasks.review || [],
+                done: tasks.done || []
             };
             
             return {
