@@ -80,7 +80,7 @@
       "grade": "C",
       "status": "active",
       "lastActive": "2026-02-01T07:30:00-06:00",
-      "notes": "Infrastructure monitoring active. All systems green. F→C sustained improvement.",
+      "notes": "Infrastructure monitoring active. All systems green. F\u2192C sustained improvement.",
       "metrics": {
         "tasksCompleted": 40,
         "responseTime": "41m ago"
@@ -98,7 +98,7 @@
     {
       "agent": "Dashboard",
       "time": "1:30 PM",
-      "summary": "Audit 47 — 4TH CONSECUTIVE ZERO-F-GRADE CYCLE! All systems nominal.",
+      "summary": "Audit 47 \u2014 4TH CONSECUTIVE ZERO-F-GRADE CYCLE! All systems nominal.",
       "category": "audit"
     },
     {
@@ -113,5 +113,107 @@
       "summary": "Audit 19: 19 consecutive clean audits. Zero escalations.",
       "category": "audit"
     }
-  ]
+  ],
+  "tasks": {
+    "backlog": [
+      {
+        "id": "MKT-001",
+        "title": "Create Twitter Content Batches 5-8",
+        "agent": "Marketing",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "MKT-002",
+        "title": "Build LinkedIn Content Library",
+        "agent": "Marketing",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "MKT-003",
+        "title": "Create Cold Email Template Variants",
+        "agent": "Marketing",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "PROD-001",
+        "title": "Implement Waitlist Management Dashboard",
+        "agent": "Product",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "PROD-002",
+        "title": "Build Interactive Product Demo",
+        "agent": "Product",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "RES-001",
+        "title": "Segment Law Firm Database by Priority",
+        "agent": "Research",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "RES-002",
+        "title": "Deep Research on Tier 1 Targets",
+        "agent": "Research",
+        "priority": "P0",
+        "status": "pending"
+      },
+      {
+        "id": "OPS-001",
+        "title": "Create Automated Health Check Script",
+        "agent": "Operations",
+        "priority": "P0",
+        "status": "pending"
+      }
+    ],
+    "inProgress": [],
+    "review": [],
+    "done": [
+      {
+        "id": "LEGACY-001",
+        "title": "Landing Page Deployed",
+        "agent": "Product",
+        "priority": "P0",
+        "status": "done"
+      },
+      {
+        "id": "LEGACY-002",
+        "title": "Law Firm Research (142 firms)",
+        "agent": "Research",
+        "priority": "P0",
+        "status": "done"
+      },
+      {
+        "id": "LEGACY-003",
+        "title": "Blog Posts (2)",
+        "agent": "Product",
+        "priority": "P1",
+        "status": "done"
+      },
+      {
+        "id": "LEGACY-004",
+        "title": "Email Sequence",
+        "agent": "Marketing",
+        "priority": "P1",
+        "status": "done"
+      }
+    ],
+    "stats": {
+      "total": 65,
+      "p0": 22,
+      "p1": 27,
+      "p2": 16,
+      "backlog": 8,
+      "inProgress": 0,
+      "review": 0,
+      "done": 4
+    }
+  }
 }
