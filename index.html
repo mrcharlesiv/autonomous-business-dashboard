@@ -491,13 +491,13 @@
             const done = k.done || [];
             document.getElementById('completedCount').textContent = done.length;
             document.getElementById('completedWork').innerHTML = done.slice(0, 5).map(t => `
-                <div class="item" style="border-left:3px solid var(--success);padding-left:12px;">
+                <div class="item completed-task" onclick="window.location.href='pages/completed.html?task=${t.id}'" style="border-left:3px solid var(--success);padding-left:12px;cursor:pointer;transition:all 0.2s;">
                     <div class="item-content">
                         <div class="item-title">${t.title}</div>
                         <div class="item-desc">${t.agent} · ${t.priority}</div>
                     </div>
                 </div>
-            `).join('') + (done.length > 5 ? `<div style="text-align:center;padding:12px;color:var(--muted);font-size:0.85rem;">+ ${done.length - 5} more completed tasks</div>` : '');
+            `).join('') + (done.length > 5 ? `<div style="text-align:center;padding:12px;color:var(--muted);font-size:0.85rem;"><a href="pages/completed.html" style="color:var(--coral);text-decoration:none;">+ ${done.length - 5} more completed tasks →</a></div>` : '');
         }
 
         function renderComms(d) {

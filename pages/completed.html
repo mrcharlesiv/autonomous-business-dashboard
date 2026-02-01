@@ -137,6 +137,10 @@
     </div>
 
     <script>
+        // Check if we're viewing a specific task
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get('task');
+        
         async function loadData() {
             try {
                 const r = await fetch('../data.json?' + Date.now());
@@ -154,6 +158,39 @@
                 // Get completed tasks
                 const tasks = data.tasks || {};
                 const done = tasks.done || [];
+                
+                // If viewing a specific task
+                if (taskId) {
+                    const task = done.find(t => t.id === taskId);
+                    if (task) {
+                        document.querySelector('h1').textContent = '✅ Task Details';
+                        document.querySelector('.subtitle').textContent = task.title;
+                        document.querySelector('.stats-grid').style.display = 'none';
+                        
+                        document.getElementById('completedList').innerHTML = `
+                            <div class="completed-item" style="border-left-width:6px;">
+                                <div class="completed-header">
+                                    <div class="completed-title">${task.title}</div>
+                                    <span class="completed-priority ${task.priority}">${task.priority}</span>
+                                </div>
+                                <div class="completed-meta" style="margin-bottom:16px;">
+                                    <span class="completed-agent">👤 ${task.agent}</span>
+                                    <span class="completed-id">${task.id}</span>
+                                    <span style="color:var(--success);">✓ Completed</span>
+                                </div>
+                                ${task.desc ? `
+                                <div style="background:rgba(34,197,94,0.05);border:1px solid var(--border);border-radius:8px;padding:16px;margin-top:16px;">
+                                    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Description</div>
+                                    <div style="color:#ccc;line-height:1.6;">${task.desc}</div>
+                                </div>` : ''}
+                                <div style="margin-top:24px;">
+                                    <a href="completed.html" style="color:var(--coral);text-decoration:none;">← Back to all completed tasks</a>
+                                </div>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
                 
                 // Calculate stats
                 const p0 = done.filter(t => t.priority === 'P0').length;
@@ -173,7 +210,7 @@
                 }
                 
                 document.getElementById('completedList').innerHTML = done.map(task => `
-                    <div class="completed-item">
+                    <div class="completed-item" onclick="window.location.href='completed.html?task=${task.id}'" style="cursor:pointer;">
                         <div class="completed-header">
                             <div class="completed-title">${task.title}</div>
                             <span class="completed-priority ${task.priority}">${task.priority}</span>
@@ -196,8 +233,10 @@
         // Load immediately
         loadData();
         
-        // Auto-refresh every 5 minutes
-        setInterval(loadData, 5 * 60 * 1000);
+        // Auto-refresh every 5 minutes (only if not viewing single task)
+        if (!taskId) {
+            setInterval(loadData, 5 * 60 * 1000);
+        }
     </script>
 </body>
 </html>
