@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milestones — DocuMind AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #111111;
+            --border: #222;
+            --text: #ffffff;
+            --muted: #888;
+            --coral: #FF4D4D;
+            --coral-dim: rgba(255, 77, 77, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+        .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .back-btn { 
+            padding: 8px 16px; background: var(--card); border: 1px solid var(--border); 
+            border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { border-color: var(--coral); }
+        h1 { font-size: 1.8rem; font-weight: 700; }
+        .subtitle { color: var(--muted); margin-bottom: 32px; }
+        
+        .milestone { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 12px; 
+            padding: 24px; margin-bottom: 16px; transition: all 0.2s;
+        }
+        .milestone:hover { border-color: var(--coral); transform: translateY(-2px); }
+        .milestone.complete { border-left: 4px solid var(--success); }
+        .milestone.pending { border-left: 4px solid var(--warning); }
+        
+        .milestone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .milestone-title { font-size: 1.1rem; font-weight: 600; }
+        .milestone-status { 
+            padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+        }
+        .milestone-status.complete { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .milestone-status.pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        
+        .milestone-desc { color: var(--muted); margin-bottom: 16px; }
+        .milestone-progress { margin-bottom: 12px; }
+        .progress-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--coral); border-radius: 4px; transition: width 0.3s; }
+        .progress-fill.complete { background: var(--success); }
+        .progress-stats { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+        
+        .loading { text-align: center; padding: 40px; color: var(--muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/autonomous-business-dashboard/" class="back-btn">← Back to Dashboard</a>
+            <h1>🎯 Milestones</h1>
+        </div>
+        <p class="subtitle">Roadmap to $100K MRR</p>
+        <div id="milestones">Loading...</div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const r = await fetch('../data.json?' + Date.now());
+                const rawData = await r.json();
+                
+                const milestones = [
+                    { id: 'm1', name: 'Launch MVP', target: 100, current: 100, status: 'complete', description: 'Deploy initial landing page and waitlist', owner: 'Product', completedAt: '2026-02-01' },
+                    { id: 'm2', name: 'First Customer', target: 1, current: 0, status: 'pending', description: 'Close first paying customer', owner: 'Marketing', dueDate: '2026-02-28' },
+                    { id: 'm3', name: '100 Users', target: 100, current: rawData.metrics?.users || 2, status: 'pending', description: 'Reach 100 waitlist signups', owner: 'Marketing', dueDate: '2026-03-15' },
+                    { id: 'm4', name: '$10k MRR', target: 10000, current: 0, status: 'pending', description: 'Hit $10,000 monthly recurring revenue', owner: 'AXIOM-CEO', dueDate: '2026-04-30' },
+                    { id: 'm5', name: '$50k MRR', target: 50000, current: 0, status: 'pending', description: 'Scale to $50,000 MRR', owner: 'AXIOM-CEO', dueDate: '2026-06-30' },
+                    { id: 'm6', name: '$100k MRR', target: 100000, current: 0, status: 'pending', description: 'Achieve $100,000 MRR goal', owner: 'AXIOM-CEO', dueDate: '2026-08-31' }
+                ];
+                
+                render(milestones);
+            } catch(e) {
+                document.getElementById('milestones').innerHTML = '<div class="loading">Error loading data</div>';
+            }
+        }
+        
+        function render(milestones) {
+            document.getElementById('milestones').innerHTML = milestones.map(m => {
+                const pct = Math.round((m.current / m.target) * 100);
+                return `
+                    <div class="milestone ${m.status}">
+                        <div class="milestone-header">
+                            <div class="milestone-title">${m.name}</div>
+                            <div class="milestone-status ${m.status}">${m.status}</div>
+                        </div>
+                        <div class="milestone-desc">${m.description}</div>
+                        <div class="milestone-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill ${m.status}" style="width:${pct}%"></div>
+                            </div>
+                            <div class="progress-stats">
+                                <span>Owner: ${m.owner}</span>
+                                <span>${m.current.toLocaleString()} / ${m.target.toLocaleString()} (${pct}%)</span>
+                            </div>
+                            ${m.completedAt ? `<div style="color:var(--success);font-size:0.85rem;margin-top:8px">✓ Completed: ${m.completedAt}</div>` : ''}
+                            ${m.dueDate ? `<div style="color:var(--warning);font-size:0.85rem;margin-top:8px">📅 Due: ${m.dueDate}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>

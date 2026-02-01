@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Board — DocuMind AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #111111;
+            --border: #222;
+            --text: #ffffff;
+            --muted: #888;
+            --coral: #FF4D4D;
+            --coral-dim: rgba(255, 77, 77, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --blue: #3b82f6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 24px; }
+        .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .back-btn { 
+            padding: 8px 16px; background: var(--card); border: 1px solid var(--border); 
+            border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { border-color: var(--coral); }
+        h1 { font-size: 1.8rem; font-weight: 700; }
+        .subtitle { color: var(--muted); margin-bottom: 32px; }
+        
+        .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        @media (max-width: 1200px) { .kanban { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .kanban { grid-template-columns: 1fr; } }
+        
+        .kanban-col { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 20px; }
+        .kanban-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+        }
+        .kanban-title { font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kanban-count { 
+            background: var(--coral-dim); color: var(--coral); 
+            padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+        }
+        
+        .task { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 8px; 
+            padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s;
+        }
+        .task:hover { border-color: var(--coral); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,77,77,0.1); }
+        .task.P0 { border-left: 3px solid var(--danger); }
+        .task.P1 { border-left: 3px solid var(--warning); }
+        .task.P2 { border-left: 3px solid var(--blue); }
+        
+        .task-title { font-weight: 500; margin-bottom: 8px; }
+        .task-meta { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; }
+        .task-agent { color: var(--muted); }
+        .task-priority { 
+            padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600;
+        }
+        .task-priority.P0 { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .task-priority.P1 { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .task-priority.P2 { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+        
+        .task-stats { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; 
+            margin-bottom: 32px;
+        }
+        .task-stat { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+            padding: 20px; text-align: center;
+        }
+        .task-stat-value { font-size: 2rem; font-weight: 700; color: var(--coral); }
+        .task-stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/autonomous-business-dashboard/" class="back-btn">← Back to Dashboard</a>
+            <h1>📋 Task Board</h1>
+        </div>
+        <p class="subtitle">Kanban view of all tasks and deliverables</p>
+        
+        <div class="task-stats">
+            <div class="task-stat">
+                <div class="task-stat-value" id="backlogCount">0</div>
+                <div class="task-stat-label">Backlog</div>
+            </div>
+            <div class="task-stat">
+                <div class="task-stat-value" id="progressCount">0</div>
+                <div class="task-stat-label">In Progress</div>
+            </div>
+            <div class="task-stat">
+                <div class="task-stat-value" id="reviewCount">0</div>
+                <div class="task-stat-label">Review</div>
+            </div>
+            <div class="task-stat">
+                <div class="task-stat-value" id="doneCount">0</div>
+                <div class="task-stat-label">Done</div>
+            </div>
+        </div>
+        
+        <div class="kanban" id="kanban"></div>
+    </div>
+
+    <script>
+        async function loadData() {
+            try {
+                const r = await fetch('../data.json?' + Date.now());
+                const data = await r.json();
+                const agents = data.agents || [];
+                
+                const kanban = {
+                    backlog: [
+                        { id: 'b1', title: 'Twitter Account Setup', agent: 'Charles', priority: 'P0', desc: 'Create Twitter account and apply for API access' },
+                        { id: 'b2', title: 'Cold Email SMTP Config', agent: 'Charles', priority: 'P0', desc: 'Configure email server for outreach campaigns' },
+                        { id: 'b3', title: 'GA4 Analytics Setup', agent: 'Charles', priority: 'P1', desc: 'Install tracking code on landing page' }
+                    ],
+                    inProgress: agents.filter(a => a.status === 'active').map(a => ({
+                        id: `ip-${a.name}`,
+                        title: `${a.name} Operations`,
+                        agent: a.name,
+                        priority: 'P1',
+                        desc: a.notes
+                    })),
+                    review: [
+                        { id: 'r1', title: 'Twitter Content Batch', agent: 'Marketing', priority: 'P1', desc: '40+ tweets ready for review and posting' },
+                        { id: 'r2', title: 'Cold Email Templates', agent: 'Marketing', priority: 'P1', desc: 'Email sequences for law firm outreach' },
+                        { id: 'r3', title: 'LinkedIn Article', agent: 'Marketing', priority: 'P2', desc: 'Professional content for B2B audience' }
+                    ],
+                    done: [
+                        { id: 'd1', title: 'Landing Page Deployed', agent: 'Product', priority: 'P0', desc: 'Live at documind-ai.github.io' },
+                        { id: 'd2', title: 'Law Firm Research', agent: 'Research', priority: 'P0', desc: '142 firms identified and documented' },
+                        { id: 'd3', title: 'Blog Posts Published', agent: 'Product', priority: 'P1', desc: '2 SEO-optimized posts live' },
+                        { id: 'd4', title: 'Email Sequence', agent: 'Marketing', priority: 'P1', desc: 'Waitlist nurture flow complete' }
+                    ]
+                };
+                
+                render(kanban);
+            } catch(e) {
+                document.getElementById('kanban').innerHTML = '<div style="color:var(--muted);text-align:center;padding:40px">Error loading tasks</div>';
+            }
+        }
+        
+        function render(kanban) {
+            document.getElementById('backlogCount').textContent = kanban.backlog.length;
+            document.getElementById('progressCount').textContent = kanban.inProgress.length;
+            document.getElementById('reviewCount').textContent = kanban.review.length;
+            document.getElementById('doneCount').textContent = kanban.done.length;
+            
+            const columns = [
+                { key: 'backlog', title: 'Backlog', color: '#888' },
+                { key: 'inProgress', title: 'In Progress', color: '#f59e0b' },
+                { key: 'review', title: 'Review', color: '#3b82f6' },
+                { key: 'done', title: 'Done', color: '#22c55e' }
+            ];
+            
+            document.getElementById('kanban').innerHTML = columns.map(col => `
+                <div class="kanban-col">
+                    <div class="kanban-header">
+                        <div class="kanban-title" style="color:${col.color}">${col.title}</div>
+                        <div class="kanban-count">${kanban[col.key].length}</div>
+                    </div>
+                    ${kanban[col.key].map(task => `
+                        <div class="task ${task.priority}">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">
+                                <span class="task-agent">👤 ${task.agent}</span>
+                                <span class="task-priority ${task.priority}">${task.priority}</span>
+                            </div>
+                            ${task.desc ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">${task.desc}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risks & Blockers — DocuMind AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #111111;
+            --border: #222;
+            --text: #ffffff;
+            --muted: #888;
+            --coral: #FF4D4D;
+            --coral-dim: rgba(255, 77, 77, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+        .header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+        .back-btn { 
+            padding: 8px 16px; background: var(--card); border: 1px solid var(--border); 
+            border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { border-color: var(--coral); }
+        h1 { font-size: 1.8rem; font-weight: 700; }
+        .subtitle { color: var(--muted); margin-bottom: 32px; }
+        
+        .risk-summary { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; 
+            margin-bottom: 32px;
+        }
+        .risk-stat { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+            padding: 20px; text-align: center;
+        }
+        .risk-stat-value { font-size: 2rem; font-weight: 700; }
+        .risk-stat-value.high { color: var(--danger); }
+        .risk-stat-value.medium { color: var(--warning); }
+        .risk-stat-value.low { color: var(--success); }
+        .risk-stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+        
+        .risk { 
+            background: var(--card); border: 1px solid var(--border); border-radius: 12px; 
+            padding: 24px; margin-bottom: 16px; transition: all 0.2s;
+        }
+        .risk:hover { border-color: var(--coral); transform: translateY(-2px); }
+        .risk.high { border-left: 4px solid var(--danger); }
+        .risk.medium { border-left: 4px solid var(--warning); }
+        .risk.low { border-left: 4px solid var(--success); }
+        
+        .risk-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .risk-title { font-size: 1.1rem; font-weight: 600; }
+        .risk-severity { 
+            padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+        }
+        .risk-severity.high { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .risk-severity.medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .risk-severity.low { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        
+        .risk-desc { color: var(--muted); margin-bottom: 16px; }
+        .risk-action { 
+            background: var(--coral-dim); border-radius: 8px; padding: 12px 16px;
+            color: var(--coral); font-weight: 500;
+        }
+        .risk-meta { display: flex; gap: 24px; margin-top: 16px; font-size: 0.85rem; color: var(--muted); }
+        
+        @media (max-width: 768px) { .risk-summary { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/autonomous-business-dashboard/" class="back-btn">← Back to Dashboard</a>
+            <h1>⚠️ Risks & Blockers</h1>
+        </div>
+        <p class="subtitle">Active blockers requiring attention</p>
+        
+        <div class="risk-summary">
+            <div class="risk-stat">
+                <div class="risk-stat-value high">2</div>
+                <div class="risk-stat-label">High Priority</div>
+            </div>
+            <div class="risk-stat">
+                <div class="risk-stat-value medium">1</div>
+                <div class="risk-stat-label">Medium Priority</div>
+            </div>
+            <div class="risk-stat">
+                <div class="risk-stat-value low">0</div>
+                <div class="risk-stat-label">Low Priority</div>
+            </div>
+        </div>
+        
+        <div id="risks"></div>
+    </div>
+
+    <script>
+        const risks = [
+            { 
+                id: 'r1', 
+                title: 'Twitter API Access', 
+                description: 'Need browser relay or API tokens to post content. Without access, the 40+ prepared tweets cannot be deployed automatically.', 
+                severity: 'high', 
+                action: 'Charles to authorize Twitter API access',
+                owner: 'Charles',
+                status: 'open',
+                impact: 'Cannot deploy Twitter content (40+ posts ready)'
+            },
+            { 
+                id: 'r2', 
+                title: 'Cold Email Access', 
+                description: 'Need SMTP credentials for outreach. The 142 researched law firms cannot be contacted without email infrastructure.', 
+                severity: 'high', 
+                action: 'Charles to provide email credentials',
+                owner: 'Charles',
+                status: 'open',
+                impact: 'Cannot send emails to 142 researched law firms'
+            },
+            { 
+                id: 'r3', 
+                title: 'GA4 Tracking Setup', 
+                description: 'Analytics code installation needed to track user behavior and conversion metrics on the landing page.', 
+                severity: 'medium', 
+                action: 'Charles to set up Google Analytics 4',
+                owner: 'Charles',
+                status: 'open',
+                impact: 'No visibility into user behavior or conversions'
+            }
+        ];
+        
+        function render() {
+            document.getElementById('risks').innerHTML = risks.map(r => `
+                <div class="risk ${r.severity}">
+                    <div class="risk-header">
+                        <div class="risk-title">${r.title}</div>
+                        <div class="risk-severity ${r.severity}">${r.severity}</div>
+                    </div>
+                    <div class="risk-desc">${r.description}</div>
+                    <div class="risk-action">→ ${r.action}</div>
+                    <div class="risk-meta">
+                        <span>👤 Owner: ${r.owner}</span>
+                        <span>📊 Status: ${r.status}</span>
+                    </div>
+                    <div style="margin-top:12px;padding:12px;background:rgba(0,0,0,0.3);border-radius:8px;font-size:0.85rem;color:var(--muted)">
+                        <strong>Impact:</strong> ${r.impact}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        render();
+    </script>
+</body>
+</html>
