@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuMind AI — Command Center</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #111111;
+            --border: #222;
+            --text: #ffffff;
+            --muted: #888;
+            --coral: #FF4D4D;
+            --coral-dim: rgba(255, 77, 77, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --blue: #3b82f6;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 0 40px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 48px;
+        }
+
+        .hero h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.02em; }
+        .hero-sub { font-size: 1.1rem; color: var(--muted); margin-bottom: 24px; }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--success);
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .claw-accent { color: var(--coral); font-weight: 700; }
+
+        .countdown {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .countdown-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; }
+        .countdown-timer { display: flex; justify-content: center; gap: 40px; }
+        .countdown-unit { text-align: center; }
+        .countdown-value { font-size: 2.5rem; font-weight: 700; color: var(--coral); }
+        .countdown-text { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .axiom {
+            background: var(--coral-dim);
+            border: 1px solid rgba(255, 77, 77, 0.3);
+            border-radius: 12px;
+            padding: 24px 32px;
+            margin-bottom: 48px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .axiom-icon { font-size: 2rem; }
+        .axiom-info { flex: 1; }
+        .axiom-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 4px; }
+        .axiom-sub { font-size: 0.85rem; color: var(--muted); }
+        .axiom-badge { padding: 4px 12px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 20px; font-size: 0.75rem; color: var(--success); font-weight: 600; }
+
+        .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 48px; }
+        .metric { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center; }
+        .metric-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+        .metric-value { font-size: 2rem; font-weight: 700; color: var(--coral); }
+        .metric-sub { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .card-header:hover { opacity: 0.8; }
+        .card-title { font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .card-badge { font-size: 0.75rem; padding: 4px 10px; background: var(--coral-dim); border-radius: 20px; color: var(--coral); }
+        .card-expand { font-size: 0.8rem; color: var(--muted); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        @media (max-width: 900px) { .metrics { grid-template-columns: repeat(2, 1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+        .item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+        .item:hover { background: rgba(255,255,255,0.03); }
+        .item:last-child { border-bottom: none; }
+        .item-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+        .item-dot.high { background: #ef4444; }
+        .item-dot.medium { background: #f59e0b; }
+        .item-dot.low, .item-dot.complete { background: #22c55e; }
+        .item-dot.pending { background: var(--coral); }
+        .item-content { flex: 1; }
+        .item-title { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+        .item-desc { font-size: 0.8rem; color: var(--muted); }
+        .item-meta { font-size: 0.75rem; color: var(--coral); }
+
+        .progress { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+        .progress:hover { background: rgba(255,255,255,0.03); }
+        .progress:last-child { border-bottom: none; }
+        .progress-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; background: var(--coral-dim); color: var(--coral); }
+        .progress-icon.done { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .progress-info { flex: 1; }
+        .progress-name { font-size: 0.85rem; margin-bottom: 4px; }
+        .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--coral); border-radius: 2px; }
+        .progress-fill.done { background: var(--success); }
+        .progress-pct { font-size: 0.8rem; color: var(--muted); width: 40px; text-align: right; }
+
+        .scorecards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .scorecard {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .scorecard-agent { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+        .scorecard-grade { font-size: 3rem; font-weight: 700; margin-bottom: 8px; }
+        .scorecard-grade.A { color: #22c55e; }
+        .scorecard-grade.B { color: #84cc16; }
+        .scorecard-grade.C { color: #f59e0b; }
+        .scorecard-grade.D { color: #f97316; }
+        .scorecard-grade.F { color: #ef4444; }
+        .scorecard-stats { font-size: 0.75rem; color: var(--muted); }
+
+        .kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .kanban-col { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 12px; }
+        .kanban-title { font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .kanban-item { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 0.8rem; border-left: 2px solid var(--coral); cursor: pointer; transition: all 0.2s; }
+        .kanban-item:hover { background: #1a1a1a; border-color: var(--coral); transform: translateY(-1px); }
+        .kanban-item.urgent { border-left-color: #ef4444; }
+
+        .footer { text-align: center; padding: 32px 0; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); margin-top: 48px; }
+        .footer a { color: var(--coral); text-decoration: none; }
+
+        .comms-section { margin-bottom: 48px; }
+        .comms-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .comms-filter { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+        .comms-filter:hover, .comms-filter.active { background: var(--coral-dim); border-color: var(--coral); color: var(--coral); }
+        .comms-scroll { max-height: 400px; overflow-y: auto; }
+        .comm-msg { display: flex; gap: 12px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--border); cursor: pointer; transition: all 0.2s; }
+        .comm-msg:hover { background: rgba(255,255,255,0.04); }
+        .comm-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; background: var(--coral-dim); }
+        .comm-body { flex: 1; min-width: 0; }
+        .comm-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+        .comm-from { font-weight: 600; font-size: 0.9rem; }
+        .comm-time { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+        .comm-text { font-size: 0.9rem; color: #ccc; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero -->
+        <div class="hero">
+            <h1>🚀 DocuMind AI</h1>
+            <p class="hero-sub">Autonomous Business Builder → $100K MRR</p>
+            <div class="status-pill"><div class="pulse"></div> All Systems Active</div>
+        </div>
+
+        <!-- Countdown -->
+        <div class="countdown">
+            <div class="countdown-label">🚀 Product Hunt Launch</div>
+            <div class="countdown-timer" id="countdown">
+                <div class="countdown-unit"><div class="countdown-value" id="days">--</div><div class="countdown-text">Days</div></div>
+                <div class="countdown-unit"><div class="countdown-value" id="hours">--</div><div class="countdown-text">Hours</div></div>
+                <div class="countdown-unit"><div class="countdown-value" id="minutes">--</div><div class="countdown-text">Minutes</div></div>
+            </div>
+        </div>
+
+        <!-- AXIOM -->
+        <div class="axiom">
+            <div class="axiom-icon">🔮</div>
+            <div class="axiom-info">
+                <div class="axiom-title">AXIOM — Supreme Orchestrator</div>
+                <div class="axiom-sub">"I am the relentless pursuit of $100K MRR."</div>
+            </div>
+            <div class="axiom-badge">ACTIVE</div>
+        </div>
+
+        <!-- Metrics -->
+        <div class="metrics" id="metrics"></div>
+
+        <!-- Milestones, Risks, Notifications -->
+        <div class="grid-3" style="margin-bottom: 48px;">
+            <div class="card">
+                <div class="card-header" onclick="toggleSection('milestones')"><span class="card-title"><span class="claw-accent">⟩</span> Milestones</span><span class="card-badge" id="milestoneCount">0/0</span></div>
+                <div id="milestones"></div>
+            </div>
+            <div class="card">
+                <div class="card-header" onclick="toggleSection('risks')"><span class="card-title"><span class="claw-accent">⟩</span> Risks & Blockers</span><span class="card-badge" id="riskCount">0</span></div>
+                <div id="risks"></div>
+            </div>
+            <div class="card">
+                <div class="card-header" onclick="toggleSection('notifications')"><span class="card-title"><span class="claw-accent">⟩</span> Notifications</span><span class="card-badge" id="notifCount">0</span></div>
+                <div id="notifications"></div>
+            </div>
+        </div>
+
+        <!-- Agent Accountability -->
+        <div class="card" style="margin-bottom: 48px;">
+            <div class="card-header"><span class="card-title"><span class="claw-accent">⟩</span> Agent Accountability</span><span class="card-badge">Scorecards</span></div>
+            <div class="scorecards" id="scorecards"></div>
+        </div>
+
+        <!-- Agent Communications -->
+        <div class="card comms-section" style="margin-bottom: 48px;">
+            <div class="card-header"><span class="card-title"><span class="claw-accent">⟩</span> Agent Communications</span><span class="card-badge" id="commCount">0</span></div>
+            <div class="comms-filters" id="commsFilters"></div>
+            <div class="comms-scroll" id="commsLog"></div>
+        </div>
+
+        <!-- Task Board -->
+        <div class="card" style="margin-bottom: 48px;">
+            <div class="card-header"><span class="card-title"><span class="claw-accent">⟩</span> Task Board</span><span class="card-badge">Kanban</span></div>
+            <div class="kanban" id="kanban"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Last updated: <span id="lastUpdated">--</span> · Auto-refreshes every 30s · 
+            <a href="https://mrcharlesiv.github.io/documind-ai/">View Landing Page →</a>
+        </div>
+    </div>
+
+    <script>
+        let data = {};
+        let activeFilter = 'all';
+        
+        // Data transformation layer - maps Dashboard Agent data to dashboard format
+        function transformData(rawData) {
+            const agents = rawData.agents || [];
+            const metrics = rawData.metrics || {};
+            
+            // Transform agents to scorecards
+            const agentScores = {};
+            agents.forEach(agent => {
+                agentScores[agent.name] = {
+                    grade: agent.grade,
+                    tasksCompleted: agent.metrics?.tasksCompleted || 0,
+                    tasksAssigned: agent.metrics?.tasksCompleted || 0,
+                    outputCount: agent.metrics?.tasksCompleted || 0,
+                    lastActive: agent.lastActive
+                };
+            });
+            
+            // Generate milestones from deliverables
+            const milestones = [
+                { id: 'm1', name: 'Launch MVP', target: 100, current: 100, status: 'complete', description: 'Landing page and blog LIVE' },
+                { id: 'm2', name: 'First Customer', target: 1, current: 0, status: 'pending', description: 'Close first paying customer' },
+                { id: 'm3', name: '100 Users', target: 100, current: metrics.users || 0, status: 'pending', description: 'Reach 100 waitlist signups' },
+                { id: 'm4', name: '$10k MRR', target: 10000, current: 0, status: 'pending', description: 'Hit $10,000 monthly recurring revenue' },
+                { id: 'm5', name: '$50k MRR', target: 50000, current: 0, status: 'pending', description: 'Scale to $50,000 MRR' },
+                { id: 'm6', name: '$100k MRR', target: 100000, current: 0, status: 'pending', description: 'Achieve $100,000 MRR goal' }
+            ];
+            
+            // Generate risks from blockers
+            const risks = [
+                { id: 'r1', title: 'Twitter API Access', description: 'Need browser relay or API tokens to post content', severity: 'high', action: 'Charles to auth' },
+                { id: 'r2', title: 'Cold Email Access', description: 'Need SMTP credentials for outreach', severity: 'high', action: 'Charles to provide' },
+                { id: 'r3', title: 'GA4 Tracking Setup', description: 'Analytics code installation needed', severity: 'medium', action: 'Charles to setup' }
+            ];
+            
+            // Generate notifications
+            const notifications = [
+                { id: 'n1', type: 'success', title: '4th Zero-F-Grade Cycle', message: 'Sustained excellence achieved' },
+                { id: 'n2', type: 'success', title: 'All Deliverables LIVE', message: 'Landing page, blog, content ready' },
+                { id: 'n3', type: 'info', title: 'Strategic Pause', message: 'Manual integrations needed' }
+            ];
+            
+            // Transform agentComms
+            const agentComms = (rawData.agentComms || []).map((comm, idx) => ({
+                id: `c${idx}`,
+                from: comm.agent,
+                to: 'All',
+                type: comm.category || 'update',
+                message: comm.summary,
+                time: comm.time,
+                channel: 'internal'
+            }));
+            
+            // Generate kanban from agent statuses
+            const kanban = {
+                backlog: [
+                    { id: 't1', title: 'Twitter Account Setup', agent: 'Charles', priority: 'P0' },
+                    { id: 't2', title: 'Cold Email SMTP Config', agent: 'Charles', priority: 'P0' },
+                    { id: 't3', title: 'GA4 Analytics Setup', agent: 'Charles', priority: 'P1' }
+                ],
+                inProgress: agents.filter(a => a.status === 'active').map(a => ({
+                    id: `ip-${a.name}`,
+                    title: `${a.name} - ${a.role}`,
+                    agent: a.name,
+                    priority: 'P1'
+                })),
+                review: [
+                    { id: 'r1', title: 'Twitter Content (40+ posts)', agent: 'Marketing', priority: 'P1' },
+                    { id: 'r2', title: 'Cold Email Templates', agent: 'Marketing', priority: 'P1' }
+                ],
+                done: [
+                    { id: 'd1', title: 'Landing Page Deployed', agent: 'Product', priority: 'P0' },
+                    { id: 'd2', title: 'Law Firm Research (142)', agent: 'Research', priority: 'P0' },
+                    { id: 'd3', title: 'Blog Posts (2)', agent: 'Product', priority: 'P1' }
+                ]
+            };
+            
+            return {
+                config: { launchDate: '2026-02-14T09:00:00-06:00' },
+                metrics: {
+                    mrr: 0,
+                    mrrTarget: 100000,
+                    tokensUsed: metrics.totalTokens || 950000,
+                    tokenBudget: 100000000,
+                    tasksCompleted: metrics.tasksCompleted || 173,
+                    tasksInProgress: agents.filter(a => a.status === 'active').length,
+                    waitlistSignups: metrics.users || 2
+                },
+                milestones,
+                agentScores,
+                risks,
+                notifications,
+                agentComms,
+                kanban,
+                lastUpdate: rawData.lastUpdate,
+                status: rawData.status
+            };
+        }
+        
+        async function loadData() {
+            try {
+                const r = await fetch('data.json?' + Date.now());
+                const rawData = await r.json();
+                data = transformData(rawData);
+                render(data);
+            } catch(e) { 
+                console.error('Dashboard load error:', e);
+                document.getElementById('metrics').innerHTML = '<div style="color:var(--danger);padding:20px;text-align:center;">Error loading dashboard data</div>';
+            }
+        }
+
+        function updateCountdown(launchDate) {
+            const now = new Date();
+            const diff = launchDate - now;
+            
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                document.getElementById('days').textContent = days;
+                document.getElementById('hours').textContent = hours;
+                document.getElementById('minutes').textContent = minutes;
+            }
+        }
+
+        function render(d) {
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+            
+            // Countdown
+            const launch = new Date(d.config.launchDate);
+            updateCountdown(launch);
+            
+            // Metrics
+            const m = d.metrics;
+            document.getElementById('metrics').innerHTML = `
+                <div class="metric"><div class="metric-label">MRR</div><div class="metric-value">$${m.mrr.toLocaleString()}</div><div class="metric-sub">Target: $${(m.mrrTarget/1000)}K</div></div>
+                <div class="metric"><div class="metric-label">Tokens</div><div class="metric-value">${(m.tokensUsed/1000).toFixed(0)}K</div><div class="metric-sub">of ${(m.tokenBudget/1000000)}M</div></div>
+                <div class="metric"><div class="metric-label">Tasks</div><div class="metric-value">${m.tasksCompleted}</div><div class="metric-sub">${m.tasksInProgress} in progress</div></div>
+                <div class="metric"><div class="metric-label">Waitlist</div><div class="metric-value">${m.waitlistSignups}</div><div class="metric-sub">Goal: 500</div></div>
+            `;
+            
+            // Milestones
+            const complete = d.milestones.filter(m => m.status === 'complete').length;
+            document.getElementById('milestoneCount').textContent = `${complete}/${d.milestones.length}`;
+            document.getElementById('milestones').innerHTML = d.milestones.map(m => {
+                const pct = Math.round((m.current / m.target) * 100);
+                const isDone = m.status === 'complete';
+                return `<div class="progress"><div class="progress-icon ${isDone ? 'done' : ''}">${isDone ? '✓' : '○'}</div><div class="progress-info"><div class="progress-name">${m.name}</div><div class="progress-bar"><div class="progress-fill ${isDone ? 'done' : ''}" style="width:${pct}%"></div></div></div><div class="progress-pct">${pct}%</div></div>`;
+            }).join('');
+            
+            // Risks
+            document.getElementById('riskCount').textContent = d.risks.length;
+            document.getElementById('risks').innerHTML = d.risks.map(r => `
+                <div class="item">
+                    <div class="item-dot ${r.severity}"></div>
+                    <div class="item-content">
+                        <div class="item-title">${r.title}</div>
+                        <div class="item-desc">${r.description}</div>
+                        <div class="item-meta">→ ${r.action}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Notifications
+            document.getElementById('notifCount').textContent = d.notifications.length;
+            document.getElementById('notifications').innerHTML = d.notifications.map(n => `
+                <div class="item">
+                    <div class="item-dot ${n.type === 'success' ? 'complete' : 'pending'}"></div>
+                    <div class="item-content">
+                        <div class="item-title">${n.title}</div>
+                        <div class="item-desc">${n.message}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Scorecards
+            const scores = d.agentScores;
+            document.getElementById('scorecards').innerHTML = Object.entries(scores).map(([agent, s]) => `
+                <div class="scorecard">
+                    <div class="scorecard-agent">${agent}</div>
+                    <div class="scorecard-grade ${s.grade}">${s.grade}</div>
+                    <div class="scorecard-stats">Tasks: ${s.tasksCompleted} | ${s.lastActive}</div>
+                </div>
+            `).join('');
+            
+            // Communications
+            renderComms(d);
+            
+            // Kanban
+            const k = d.kanban;
+            document.getElementById('kanban').innerHTML = `
+                <div class="kanban-col"><div class="kanban-title">Backlog (${k.backlog.length})</div>${k.backlog.map(t => `<div class="kanban-item">${t.title}<div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${t.agent} · ${t.priority}</div></div>`).join('')}</div>
+                <div class="kanban-col"><div class="kanban-title">In Progress (${k.inProgress.length})</div>${k.inProgress.map(t => `<div class="kanban-item">${t.title}<div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${t.agent} · ${t.priority}</div></div>`).join('')}</div>
+                <div class="kanban-col"><div class="kanban-title">Review (${k.review.length})</div>${k.review.map(t => `<div class="kanban-item">${t.title}<div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${t.agent} · ${t.priority}</div></div>`).join('')}</div>
+                <div class="kanban-col"><div class="kanban-title">Done (${k.done.length})</div>${k.done.map(t => `<div class="kanban-item" style="opacity:0.7">${t.title}<div style="font-size:0.7rem;color:var(--muted);margin-top:4px">${t.agent}</div></div>`).join('')}</div>
+            `;
+        }
+
+        function renderComms(d) {
+            const comms = d.agentComms || [];
+            document.getElementById('commCount').textContent = comms.length;
+            
+            const agents = ['all', ...new Set(comms.map(c => c.from))];
+            document.getElementById('commsFilters').innerHTML = agents.map(a => 
+                `<button class="comms-filter ${activeFilter === a ? 'active' : ''}" onclick="filterComms('${a}')">${a === 'all' ? 'All' : a}</button>`
+            ).join('');
+
+            const filtered = activeFilter === 'all' ? comms : comms.filter(c => c.from === activeFilter);
+            
+            document.getElementById('commsLog').innerHTML = filtered.map(c => {
+                const avatar = {'AXIOM-PRIME': '🔮', 'AXIOM-CEO': '👔', 'Dashboard': '📊', 'Marketing': '📢', 'Product': '📦', 'Research': '🔬', 'Operations': '⚙️'}[c.from] || '🤖';
+                return `<div class="comm-msg">
+                    <div class="comm-avatar">${avatar}</div>
+                    <div class="comm-body">
+                        <div class="comm-header">
+                            <span class="comm-from">${c.from}</span>
+                            <span class="comm-time">${c.time}</span>
+                        </div>
+                        <div class="comm-text">${c.message}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function filterComms(agent) {
+            activeFilter = agent;
+            renderComms(data);
+        }
+
+        function toggleSection(id) {
+            // Section toggle functionality can be added here
+        }
+
+        // Initialize
+        loadData();
+        setInterval(loadData, 30000);
+        setInterval(() => {
+            if (data.config) updateCountdown(new Date(data.config.launchDate));
+        }, 60000);
+    </script>
+</body>
+</html>
